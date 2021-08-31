@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.6.0/bootstrap-tagsinput.min.js">
+</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.6.0/bootstrap-tagsinput.min.css"/>
+
+</head>
+<body>
+    <!-- <style>
+
+html {
+  font-size: 62.5%;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: inherit;
+}
+
+.calculator {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+}
+
+.calculator-screen {
+  width: 100%;
+  font-size: 5rem;
+  height: 80px;
+  border: none;
+  background-color: #252525;
+  color: #fff;
+  text-align: right;
+  padding-right: 20px;
+  padding-left: 10px;
+}
+
+button {
+  height: 60px;
+  background-color: #fff;
+  border-radius: 3px;
+  border: 1px solid #c4c4c4;
+  background-color: transparent;
+  font-size: 2rem;
+  color: #333;
+  background-image: linear-gradient(to bottom, transparent, transparent 50%, rgba(0, 0, 0, .04));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .05), inset 0 1px 0 0 rgba(255, 255, 255, .45), inset 0 -1px 0 0 rgba(255, 255, 255, .15), 0 1px 0 0 rgba(255, 255, 255, .15);
+  text-shadow: 0 1px rgba(255, 255, 255, .4);
+}
+
+button:hover {
+  background-color: #eaeaea;
+}
+
+.operator {
+  color: #337cac;
+}
+
+.all-clear {
+  background-color: #f0595f;
+  border-color: #b0353a;
+  color: #fff;
+}
+
+.all-clear:hover {
+  background-color: #f17377;
+}
+
+.equal-sign {
+  background-color: #2e86c0;
+  border-color: #337cac;
+  color: #fff;
+  height: 100%;
+  grid-area: 2 / 4 / 6 / 5;
+}
+
+.equal-sign:hover {
+  background-color: #4e9ed4;
+}
+
+.calculator-keys {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 20px;
+  padding: 20px;
+}
+
+
+    </style>
+
+<div class="calculator">
+
+    <input type="text" class="calculator-screen" value="" disabled />
+    
+    <div class="calculator-keys">
+      
+      <button type="button" class="operator" value="+">+</button>
+      <button type="button" class="operator" value="-">-</button>
+      <button type="button" class="operator" value="*">&times;</button>
+      <button type="button" class="operator" value="/">&divide;</button>
+  
+      <button type="button" value="7">7</button>
+      <button type="button" value="8">8</button>
+      <button type="button" value="9">9</button>
+  
+  
+      <button type="button" value="4">4</button>
+      <button type="button" value="5">5</button>
+      <button type="button" value="6">6</button>
+  
+  
+      <button type="button" value="1">1</button>
+      <button type="button" value="2">2</button>
+      <button type="button" value="3">3</button>
+  
+  
+      <button type="button" value="0">0</button>
+      <button type="button" class="decimal" value=".">.</button>
+      <button type="button" class="all-clear" value="all-clear">AC</button>
+  
+      <button type="button" class="equal-sign operator" value="=">=</button>
+  
+    </div>
+  </div>
+
+
+<script>
+    const calculator = {
+  displayValue: '0',
+  firstOperand: null,
+  waitingForSecondOperand: false,
+  operator: null,
+};
+
+function inputDigit(digit) {
+  const { displayValue, waitingForSecondOperand } = calculator;
+
+  if (waitingForSecondOperand === true) {
+    calculator.displayValue = digit;
+    calculator.waitingForSecondOperand = false;
+  } else {
+    calculator.displayValue = displayValue === '0' ? digit : displayValue + digit;
+  }
+}
+
+function inputDecimal(dot) {
+  if (calculator.waitingForSecondOperand === true) {
+  	calculator.displayValue = "0."
+    calculator.waitingForSecondOperand = false;
+    return
+  }
+
+  if (!calculator.displayValue.includes(dot)) {
+    calculator.displayValue += dot;
+  }
+}
+
+function handleOperator(nextOperator) {
+  const { firstOperand, displayValue, operator } = calculator
+  const inputValue = parseFloat(displayValue);
+  
+  if (operator && calculator.waitingForSecondOperand)  {
+    calculator.operator = nextOperator;
+    return;
+  }
+
+
+  if (firstOperand == null && !isNaN(inputValue)) {
+    calculator.firstOperand = inputValue;
+  } else if (operator) {
+    const result = calculate(firstOperand, inputValue, operator);
+
+    calculator.displayValue = `${parseFloat(result.toFixed(7))}`;
+    calculator.firstOperand = result;
+  }
+
+  calculator.waitingForSecondOperand = true;
+  calculator.operator = nextOperator;
+}
+
+function calculate(firstOperand, secondOperand, operator) {
+  if (operator === '+') {
+    return firstOperand + secondOperand;
+  } else if (operator === '-') {
+    return firstOperand - secondOperand;
+  } else if (operator === '*') {
+    return firstOperand * secondOperand;
+  } else if (operator === '/') {
+    return firstOperand / secondOperand;
+  }
+
+  return secondOperand;
+}
+
+function resetCalculator() {
+  calculator.displayValue = '0';
+  calculator.firstOperand = null;
+  calculator.waitingForSecondOperand = false;
+  calculator.operator = null;
+}
+
+function updateDisplay() {
+  const display = document.querySelector('.calculator-screen');
+  display.value = calculator.displayValue;
+}
+
+updateDisplay();
+
+const keys = document.querySelector('.calculator-keys');
+keys.addEventListener('click', event => {
+  const { target } = event;
+  const { value } = target;
+  if (!target.matches('button')) {
+    return;
+  }
+
+  switch (value) {
+    case '+':
+    case '-':
+    case '*':
+    case '/':
+    case '=':
+      handleOperator(value);
+      break;
+    case '.':
+      inputDecimal(value);
+      break;
+    case 'all-clear':
+      resetCalculator();
+      break;
+    default:
+      if (Number.isInteger(parseFloat(value))) {
+        inputDigit(value);
+      }
+  }
+
+  updateDisplay();
+});
+</script> -->
+
+
+
+
+
+
+
+    <!-- <style>
+        button{
+            text-transform: uppercase;
+        }
+
+    </style>
+   
+    
+<div class="container py-5 align-content-between">
+    <div class="row">
+        <div class="col-lg-4 offset-4">
+              <div class="row">   
+               
+                <input type="text" class=" col-lg-10 form-control input-group-lg" name="calc" id="calc">
+
+                 <button class="btn btn-danger my-2 mx-2 col-lg-5" onclick="reset()"> clear</button>
+                 <button class="btn btn-secondary my-2 mx-2  col-lg-4" onclick="backspace()"> <-</button> 
+
+                 <button class="btn btn-primary m-2 col-lg-2" onclick=" UserClickBtn(1)" id="one">1</button>
+                <button class="btn btn-primary m-2 col-lg-2" onclick=" UserClickBtn(2)" id="two">2</button>
+                <button class="btn btn-primary m-2 col-lg-2" onclick=" UserClickBtn(3)" id="three">3</button>
+                <button class="btn btn-success m-2 col-lg-2" onclick=" UserClickBtn('+')" id="add">+</button>
+                <button class="btn btn-primary m-2 col-lg-2" onclick=" UserClickBtn(4)" id="four">4</button>
+                <button class="btn btn-primary m-2 col-lg-2" onclick=" UserClickBtn(5)" id="five">5</button>
+                <button class="btn btn-primary  m-2 col-lg-2"  onclick=" UserClickBtn(6)" id="six">6</button>
+                <button class="btn btn-success m-2 col-lg-2" id="subtraction" onclick=" UserClickBtn('-')">-</button>
+                <button class="btn btn-primary m-2 col-lg-2" onclick=" UserClickBtn(7)"  id="seven">7</button>
+                <button class="btn btn-primary m-2 col-lg-2"  onclick=" UserClickBtn(8)" id="eight">8</button>
+                <button class="btn btn-primary m-2 col-lg-2" onclick=" UserClickBtn(9)"  id="nine">9</button>
+                <button class="btn btn-success m-2 col-lg-2" id="multi" onclick=" UserClickBtn('*')">*</button>
+                <button class="btn btn-primary m-2 col-lg-2" id="dot" onclick=" UserClickBtn('.')">.</button>
+                <button class="btn btn-primary m-2 col-lg-2"  onclick=" UserClickBtn(0)" id="zero">0</button>
+                <button class="btn btn-primary  m-2 col-lg-2 " id="equal" onclick="calcValue()">=</button>
+                <button class="btn btn-success  m-2 col-lg-2" id="division" onclick=" UserClickBtn('/')">/</button>
+             
+
+             </div>
+             </div>
+             </div>
+             </div>
+             <div>
+
+                          
+               
+                  
+             <script>
+              var input_box=document.getElementById("calc");
+                
+
+              function reset(){
+                  input_box.value="";
+              }   
+              
+              function backspace(){
+                  const num=document.querySelector("#calc").value.slice(0,-1);
+                  document.querySelector("#calc").value=num;
+
+              }
+             
+              
+
+
+              function UserClickBtn(num){
+
+                  input_box.value+=num;
+                
+                  var input_box1=document.querySelector("#calc").value.charAt(0);
+                  var input_box2=document.querySelector("#calc").value.charAt(1);
+                  if(input_box1 == 0 && input_box2 !="." ){
+                    input_box.value=eval(input_box.value);
+                  }  
+                  
+               
+              }
+              
+              function calcValue(){
+               
+                  try{
+                   
+                   input_box.value=eval(input_box.value);              
+                    console.log(input_box.value);
+                  
+                    
+            }
+            catch(err){
+                alert("invalid");
+
+            }
+              }
+             
+            
+              
+
+             </script> -->
+
+
+             <div class="container py-5 align-content-between">
+              <div class="row">
+                  <div class="col-lg-4 offset-4">
+                        <div class="row">   
+                         
+                          <input type="text" class=" col-lg-10 form-control input-group-lg text-right font-weight-bold FontBig" name="input-box" id="input-box" disabled>
+                          
+                           <button class="btn btn-danger my-2 mx-2 col-lg-5 op__key" op="clear"> clear</button>
+
+                           <button class="btn btn-secondary my-2 mx-2  col-lg-4 op__key" op="back"> <-</button> 
+          
+                           <button class="btn btn-primary m-2 col-lg-2 num__key">1</button>
+                          <button class="btn btn-primary m-2 col-lg-2 num__key" >2</button>
+                          <button class="btn btn-primary m-2 col-lg-2 num__key" >3</button>
+                          <button class="btn btn-success m-2 col-lg-2 op__key" op="add">+</button>
+                          <button class="btn btn-primary m-2 col-lg-2 num__key" >4</button>
+                          <button class="btn btn-primary m-2 col-lg-2 num__key" >5</button>
+                          <button class="btn btn-primary  m-2 col-lg-2 num__key">6</button>
+                          <button class="btn btn-success m-2 col-lg-2 op__key"  op="subtract" >-</button>
+                          <button class="btn btn-primary m-2 col-lg-2 num__key">7</button>
+                          <button class="btn btn-primary m-2 col-lg-2 num__key" >8</button>
+                          <button class="btn btn-primary m-2 col-lg-2 num__key">9</button>
+                          <button class="btn btn-success m-2 col-lg-2 op__key"  op="multiply">x</button>
+                          <button class="btn btn-primary m-2 col-lg-2 num__key">.</button>
+                          <button class="btn btn-primary m-2 col-lg-2 num__key" >0</button>
+                          <button class="btn btn-primary  m-2 col-lg-2 eq__key "  op="">=</button>
+                          <button class="btn btn-success  m-2 col-lg-2 op__key"  op="divide">/</button>
+                          
+          
+                       </div>
+                       </div>
+                       </div>
+                       </div>
+                       <script>
+                         const $input=document.querySelector("input");
+                         
+                         document.querySelectorAll(".num__key").forEach(el =>{
+                             el.onclick = ()=> $input.value=$input.value !== "0" ?
+                            $input.value + el.innerText:el.innerText;
+                           
+
+                           }
+                         )
+
+                        
+                         const buffer=[];
+                         const opCallback = opName=>()=>{
+                           let currentVal=parseFloat($input.value);
+                           if(opName==="percent"){
+                             currentVal *= 0.01;
+                             $input.value=currentVal;
+                             
+                            
+                           }
+                          else{
+                            if(buffer && buffer.length){
+                             
+                              buffer.push({value: currentVal });
+                              const result = evaluate(buffer);
+                             
+                              buffer.push({value: result });
+                          
+                              buffer.push({value: opName });
+                             
+                              $input.value=""
+                            
+                            }
+                            else{
+                              
+                              buffer.push({value: currentVal });
+                              
+                              buffer.push({value: opName });
+                           
+                              $input.value=""
+
+                            }
+
+                          }
+                         }
+
+                         function clear(){
+                          $input.value="";
+                         }
+
+                         const evaluate =buffer=>{
+                           const secondOperand=buffer.pop().value;
+                           const operator=buffer.pop().value;
+                           const firstOperand=buffer.pop().value;
+                           
+                           switch(operator){
+                             case "add":
+                               return firstOperand + secondOperand;
+                               break;
+                               case "subtract":
+                               return firstOperand - secondOperand;
+                               break;
+                               case "divide":
+                               return firstOperand / secondOperand;
+                               break;
+                               case "multiply":
+                               return firstOperand * secondOperand;
+                               break;
+                               default:
+                                 return secondOperand;
+                            
+                           }
+                         };
+
+                         for (const opName of ["add", "subtract",
+                          "divide", "multiply"]) {
+                          document.querySelector(`.op__key[op=${opName}]`)
+                          .onclick = opCallback(opName);
+                         }
+                        
+                         document.querySelector(".eq__key").onclick=()=>{
+                           if(buffer && buffer.length){
+                             buffer.push({value:parseFloat($input.value)
+                              
+                            });
+                       
+                            $input.value=evaluate(buffer);
+                        
+                           }
+                         }
+                         document.querySelector(".op__key[op=clear]").onclick=()=>{
+                           $input.value=0;
+                           buffer.length=0;
+                         }
+                         document.querySelector(".op__key[op=back]").onclick=()=>{
+                           $input.value=$input.value.slice(0,-1);
+                           
+                         }
+                        
+                       </script>
+                       <div>
+
+             
+<div class="file-drop-area"> <input type="file" class="file-input" accept=".jfif,.jpg,.jpeg,.png,.gif" multiple> <span id="divImageMediaPreview"></span></div>
+
+<script>
+    $(document).on('change', '.file-input', function() {
+
+
+var filesCount = $(this)[0].files.length;
+
+var textbox = $(this).prev();
+
+if (filesCount === 1) {
+var fileName = $(this).val().split('\\').pop();
+textbox.text(fileName);
+} else {
+textbox.text(filesCount + ' files selected');
+}
+
+
+
+if (typeof (FileReader) != "undefined") {
+var dvPreview = $("#divImageMediaPreview");
+dvPreview.html("");
+$($(this)[0].files).each(function () {
+var file = $(this);
+var reader = new FileReader();
+reader.onload = function (e) {
+var img = $("<img />");
+img.attr("style", "width: 150px; height:100px; padding: 10px");
+img.attr("src", e.target.result);
+dvPreview.append(img);
+}
+reader.readAsDataURL(file[0]);
+});
+} else {
+alert("This browser does not support HTML5 FileReader.");
+}
+
+
+});
+</script>
+            
+             </body>
+</html>
